@@ -121,6 +121,60 @@ uv run data_formulator --dev   # Run backend only (for frontend development)
     Open [http://localhost:5567](http://localhost:5567) to view it in the browser.
 
 
+## Docker
+
+Docker is the easiest way to run Data Formulator without installing Python or Node.js locally.
+
+### Quick start
+
+1. **Copy the environment template and add your API keys:**
+
+    ```bash
+    cp .env.template .env
+    # Edit .env and set your OPENAI_API_KEY, ANTHROPIC_API_KEY, etc.
+    ```
+
+2. **Build and start the container:**
+
+    ```bash
+    docker compose up --build
+    ```
+
+3. Open [http://localhost:5567](http://localhost:5567) in your browser.
+
+To stop the container: `docker compose down`
+
+Workspace data (uploaded files, sessions) is persisted in a Docker volume (`data_formulator_home`) so it survives container restarts.
+
+### Build the image manually
+
+```bash
+docker build -t data-formulator .
+docker run --rm -p 5567:5567 --env-file .env data-formulator
+```
+
+### Using the Docker sandbox for code execution
+
+When running Data Formulator inside Docker you can still use the Docker-based code-execution sandbox. First build the sandbox image:
+
+```bash
+docker build -t data-formulator-sandbox \
+    -f py-src/data_formulator/sandbox/Dockerfile.sandbox .
+```
+
+Then set `SANDBOX=docker` in your `.env` and mount the Docker socket so the container can spawn child containers:
+
+```bash
+docker run --rm -p 5567:5567 \
+    --env-file .env \
+    -e SANDBOX=docker \
+    -v /var/run/docker.sock:/var/run/docker.sock \
+    data-formulator
+```
+
+The `docker-compose.yml` already mounts the Docker socket for convenience.
+
+
 ## Sandbox
 
 AI-generated Python code runs inside a **sandbox** to isolate it from the main server process. Two backends are available:

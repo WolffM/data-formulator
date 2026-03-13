@@ -1,0 +1,46 @@
+# Copyright (c) Microsoft Corporation.
+# Licensed under the MIT License.
+
+# Docker Compose configuration for Data Formulator.
+#
+# Quick start:
+#   1. Copy .env.template to .env and fill in your API keys.
+#   2. docker compose up --build
+#   3. Open http://localhost:5567 in your browser.
+#
+# To use the Docker sandbox for code execution instead of the default
+# local sandbox, set SANDBOX=docker in your .env file and build the
+# sandbox image first:
+#   docker build -t data-formulator-sandbox \
+#       -f py-src/data_formulator/sandbox/Dockerfile.sandbox .
+
+services:
+  data-formulator:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: data-formulator:latest
+    ports:
+      - "5567:5567"
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      # Override individual values here if you prefer not to use a .env file.
+      # Example:
+      #   OPENAI_API_KEY: sk-...
+      #   OPENAI_MODELS: gpt-4o
+      FLASK_RUN_PORT: "5567"
+    volumes:
+      # Persist workspace data (uploaded files, sessions, etc.) across container restarts.
+      - data_formulator_home:/home/appuser/.data_formulator
+      # Mount the Docker socket so the Docker sandbox backend can spin up
+      # child containers.  Remove this volume if you are not using SANDBOX=docker.
+      # WARNING: Mounting the Docker socket grants the container significant access
+      # to the host's Docker daemon. Only enable this when using SANDBOX=docker and
+      # only in trusted environments.
+      - /var/run/docker.sock:/var/run/docker.sock
+    restart: unless-stopped
+
+volumes:
+  data_formulator_home:
