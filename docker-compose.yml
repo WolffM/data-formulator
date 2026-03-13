@@ -1,0 +1,37 @@
+# Copyright (c) Microsoft Corporation.
+# Licensed under the MIT License.
+
+# Data Formulator – Docker Compose
+#
+# Quick start:
+#   1. cp .env.template .env         # then fill in your API keys
+#   2. docker compose up --build
+#   3. Open http://localhost:5567
+#
+# The .env file is loaded automatically by Compose (see env_file below).
+# You can override any variable with an -e flag or by editing the
+# environment section.
+
+services:
+  data-formulator:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: data-formulator:latest
+    container_name: data-formulator
+    ports:
+      - "5567:5567"
+    env_file:
+      - path: .env
+        required: false   # allow running without a .env file
+    environment:
+      # Override specific settings here if you don't use a .env file.
+      # OPENAI_API_KEY: your-key-here
+      SANDBOX: local      # 'docker' requires mounting the Docker socket (see docker-compose.yml comments)
+    volumes:
+      # Persist workspace data (uploaded files, session state) across restarts
+      - data_formulator_home:/root/.data_formulator
+    restart: unless-stopped
+
+volumes:
+  data_formulator_home:

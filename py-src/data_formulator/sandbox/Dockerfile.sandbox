@@ -1,0 +1,33 @@
+# Copyright (c) Microsoft Corporation.
+# Licensed under the MIT License.
+
+# Sandbox image for executing AI-generated Python code in isolation.
+#
+# Build:
+#   docker build -t data-formulator-sandbox \
+#       -f py-src/data_formulator/sandbox/Dockerfile.sandbox .
+#
+# The DockerSandbox class (docker_sandbox.py) mounts the user workspace
+# read-only and a temporary output directory read-write, then runs a
+# generated Python script inside this container.
+
+FROM python:3.11-slim
+
+# Install only the packages that user data-transformation scripts need.
+# Keep this image small – no Flask, no AI libraries, etc.
+RUN pip install --no-cache-dir \
+        pandas \
+        numpy \
+        duckdb \
+        pyarrow \
+        scikit-learn \
+        openpyxl
+
+# Create sandbox directories (used as mount points at runtime)
+RUN mkdir -p /sandbox/workdir /sandbox/outputs
+
+WORKDIR /sandbox/workdir
+
+# Run as a non-root user for additional isolation
+RUN useradd --create-home --shell /bin/bash sandbox
+USER sandbox
