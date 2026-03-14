@@ -45,13 +45,16 @@ COPY py-src ./py-src
 COPY --from=frontend-builder /app/py-src/data_formulator/dist ./py-src/data_formulator/dist
 
 # Install the package and its dependencies
-RUN pip install --no-cache-dir -e .
+RUN pip install --no-cache-dir .
 
 # Switch to non-root user and set the home directory for workspace data
 RUN chown -R appuser:appuser /app
 USER appuser
 
 EXPOSE 5567
+
+HEALTHCHECK --interval=30s --timeout=5s --retries=3 \
+  CMD curl -f http://localhost:5567/ || exit 1
 
 # Run the app on all interfaces so Docker port-forwarding works.
 # We do not pass --dev so Flask runs in production mode (no debugger/reloader).
