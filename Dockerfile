@@ -39,7 +39,6 @@ WORKDIR /app
 
 # Copy Python package sources
 COPY pyproject.toml MANIFEST.in README.md ./
-COPY requirements.txt ./
 COPY py-src ./py-src
 
 # Copy the compiled frontend into the package's expected location
@@ -51,9 +50,6 @@ RUN pip install --no-cache-dir -e .
 # Switch to non-root user and set the home directory for workspace data
 RUN chown -R appuser:appuser /app
 USER appuser
-
-# Default port (matches local_server default)
-ENV FLASK_RUN_PORT=5567
 
 EXPOSE 5567
 

@@ -153,26 +153,11 @@ docker build -t data-formulator .
 docker run --rm -p 5567:5567 --env-file .env data-formulator
 ```
 
-### Using the Docker sandbox for code execution
+### Docker sandbox (`SANDBOX=docker`) is not supported inside a container
 
-When running Data Formulator inside Docker you can still use the Docker-based code-execution sandbox. First build the sandbox image:
+The Docker sandbox backend works by calling `docker run -v <host_path>:...` to bind-mount temporary workspace directories into child containers. When Data Formulator itself runs in a Docker container those paths refer to the *container* filesystem, not the host, so Docker daemon cannot mount them and the feature does not work.
 
-```bash
-docker build -t data-formulator-sandbox \
-    -f py-src/data_formulator/sandbox/Dockerfile.sandbox .
-```
-
-Then set `SANDBOX=docker` in your `.env` and mount the Docker socket so the container can spawn child containers:
-
-```bash
-docker run --rm -p 5567:5567 \
-    --env-file .env \
-    -e SANDBOX=docker \
-    -v /var/run/docker.sock:/var/run/docker.sock \
-    data-formulator
-```
-
-The `docker-compose.yml` already mounts the Docker socket for convenience.
+Use `SANDBOX=docker` only when running Data Formulator **directly on the host** (e.g. with `uv run data_formulator --sandbox docker` or `python -m data_formulator --sandbox docker`). When using the Docker image, keep the default `SANDBOX=local`.
 
 
 ## Sandbox
